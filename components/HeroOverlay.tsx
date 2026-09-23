@@ -34,7 +34,7 @@ const letter = {
 
 export default function HeroOverlay() {
   return (
-    <div className="pointer-events-none fixed inset-0 z-50 h-screen w-screen bg-transparent">
+    <div className="pointer-events-none absolute inset-0 z-50 h-full w-full bg-transparent overflow-hidden">
       {/* Film grain / noise overlay */}
       <svg className="absolute inset-0 h-full w-full opacity-[0.035] mix-blend-overlay">
         <filter id="grain-noise">
@@ -49,8 +49,6 @@ export default function HeroOverlay() {
         <rect width="100%" height="100%" filter="url(#grain-noise)" />
       </svg>
 
-      {/* Subtle vignette */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.85)_100%)]" />
 
       {/* Background Logo — Top center to lower middle center */}
       <div className="pointer-events-none absolute inset-x-0 top-4 md:top-6 bottom-[26%] md:bottom-[28%] z-0 flex items-center justify-center px-4">

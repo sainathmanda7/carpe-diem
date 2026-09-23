@@ -2,6 +2,7 @@ import SpotlightDancers from '@/components/SpotlightDancers';
 import HeroOverlay from '@/components/HeroOverlay';
 import PhoenixFire from '@/components/PhoenixFire';
 import AboutOverlay from '@/components/AboutOverlay';
+import WhiskyExperience from '@/components/WhiskyExperience';
 
 export default function Home() {
   return (
@@ -38,6 +39,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* --- WHISKY EXPERIENCE SECTION --- */}
+      <WhiskyExperience />
+    
     </main>
   );
 }

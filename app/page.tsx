@@ -19,14 +19,21 @@ export default function Home() {
 
       {/* --- ABOUT SECTION --- */}
       <section className="relative w-full h-screen bg-black overflow-hidden">
-        {/* LAYER 1: The WebGL Procedural Fire (Bottom) */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <PhoenixFire />
+        {/* LAYER 1: The WebGL Procedural Fire & SVG (Left Aligned & Scaled Down) */}
+        <div className="absolute left-0 top-0 w-full md:w-1/2 h-full flex items-center justify-center pointer-events-none p-10 z-0">
+          <div className="relative w-full h-full max-w-[600px] max-h-[600px]">
+            <PhoenixFire />
+            
+            <img 
+              src="/phoenix-mask.svg" 
+              alt="Phoenix Details"
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none mix-blend-color-dodge z-10"
+            />
+          </div>
         </div>
 
         {/* LAYER 2: The Glassmorphic UI (Top) */}
-        {/* FIX 2: Removed redundant absolute wrapper */}
-        {/*<AboutOverlay />*/}
+        {/* <AboutOverlay /> */}
       </section>
 
     </main>

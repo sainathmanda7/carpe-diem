@@ -87,6 +87,11 @@ const fragmentShader = /* glsl */ `
     vec4 maskSample = texture2D(uMap, uv);
     float brightness = dot(maskSample.rgb, vec3(0.299, 0.587, 0.114));
 
+    // Discard any boundary edge clamping artifacts
+    if (uv.x <= 0.002 || uv.x >= 0.998 || uv.y <= 0.002 || uv.y >= 0.998) {
+      discard;
+    }
+
     // Outside the shape -> discard early (handles transparent or white background SVG).
     if (maskSample.a < 0.05 || (maskSample.a > 0.5 && brightness > 0.92)) {
       discard;

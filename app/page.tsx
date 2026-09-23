@@ -5,6 +5,7 @@ import AboutOverlay from '@/components/AboutOverlay';
 import WhiskyExperience from '@/components/WhiskyExperience';
 import OrbitWheel from '@/components/OrbitWheel';
 import VibeTree from '@/components/VibeTree';
+import VibeOverlay from "@/components/VibeOverlay";
 
 export default function Home() {
   return (
@@ -44,7 +45,11 @@ export default function Home() {
       {/* --- WHISKY EXPERIENCE SECTION --- */}
       <WhiskyExperience />
       <OrbitWheel />
-      <VibeTree />
+      {/* --- ATMOSPHERE SECTION --- */}
+      <section className="relative w-full min-h-screen h-screen bg-black overflow-hidden flex items-center justify-start">
+        <VibeTree />
+        <VibeOverlay />
+      </section>
     </main>
   );
 }

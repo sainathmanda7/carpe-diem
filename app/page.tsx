@@ -3,6 +3,8 @@ import HeroOverlay from '@/components/HeroOverlay';
 import PhoenixFire from '@/components/PhoenixFire';
 import AboutOverlay from '@/components/AboutOverlay';
 import WhiskyExperience from '@/components/WhiskyExperience';
+import OrbitWheel from '@/components/OrbitWheel';
+import VibeTree from '@/components/VibeTree';
 
 export default function Home() {
   return (
@@ -41,7 +43,8 @@ export default function Home() {
 
       {/* --- WHISKY EXPERIENCE SECTION --- */}
       <WhiskyExperience />
-    
+      <OrbitWheel />
+      <VibeTree />
     </main>
   );
 }

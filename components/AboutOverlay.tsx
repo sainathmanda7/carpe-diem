@@ -5,7 +5,7 @@ import { m } from "framer-motion";
 
 export default function AboutOverlay() {
   return (
-    <div className="absolute inset-0 w-full min-h-screen flex items-center justify-center pointer-events-none z-10">
+    <div className="w-full flex items-center justify-center pointer-events-none z-10">
       <m.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -13,7 +13,7 @@ export default function AboutOverlay() {
           duration: 1.2,
           ease: [0.16, 1, 0.3, 1],
         }}
-        className="w-[800px] p-16 rounded-2xl bg-black/20 backdrop-blur-xl border border-white/10 shadow-2xl pointer-events-auto overflow-hidden relative flex flex-col items-center text-center"
+        className="w-full max-w-[560px] p-8 md:p-12 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl pointer-events-auto overflow-hidden relative flex flex-col items-center text-center"
       >
         {/* SVG Noise Texture Overlay */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.04]">

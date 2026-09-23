@@ -18,10 +18,10 @@ export default function Home() {
       </section>
 
       {/* --- ABOUT SECTION --- */}
-      <section className="relative w-full h-screen bg-black overflow-hidden">
-        {/* LAYER 1: The WebGL Procedural Fire & SVG (Left Aligned & Scaled Down) */}
-        <div className="absolute left-0 top-0 w-full md:w-1/2 h-full flex items-center justify-center pointer-events-none p-10 z-0">
-          <div className="relative w-full h-full max-w-[600px] max-h-[600px]">
+      <section className="relative w-full h-screen bg-black overflow-hidden flex flex-col md:flex-row items-center">
+        {/* LEFT: Phoenix WebGL Fire & SVG */}
+        <div className="w-full md:w-1/2 h-full flex items-center justify-center pointer-events-none p-6 md:p-12 z-0">
+          <div className="relative w-full h-full max-w-[500px] max-h-[500px]">
             <PhoenixFire />
             
             <img 
@@ -32,8 +32,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* LAYER 2: The Glassmorphic UI (Top) */}
-        {/* <AboutOverlay /> */}
+        {/* RIGHT: Glassmorphic UI */}
+        <div className="w-full md:w-1/2 h-full flex items-center justify-center p-6 md:p-12 z-10">
+          <AboutOverlay />
+        </div>
       </section>
 
     </main>

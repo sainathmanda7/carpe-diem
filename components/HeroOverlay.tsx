@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import localFont from 'next/font/local';
 
 const longaIberica = localFont({
@@ -50,63 +50,28 @@ export default function HeroOverlay() {
       </svg>
 
       {/* Subtle vignette */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.6)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.85)_100%)]" />
 
-      {/* Top-level navigation */}
-      <nav className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-6 md:px-12 md:py-8">
-        {/* CD monogram logo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-          className="flex items-center"
-        >
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 48 48"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="md:h-14 md:w-14"
-          >
-            <g stroke="#F3E5AB" strokeWidth="1.5" strokeLinecap="round">
-              {/* C */}
-              <path
-                d="M20 11C13.9249 11 9 15.9249 9 22C9 28.0751 13.9249 33 20 33"
-                opacity="0.9"
-              />
-              {/* D */}
-              <path
-                d="M25 11H31C35.9706 11 40 15.9249 40 22C40 28.0751 35.9706 33 31 33H25"
-                opacity="0.9"
-              />
-              <path d="M25 11V33" opacity="0.9" />
-            </g>
-            {/* small flourish */}
-            <circle cx="24" cy="24" r="1.5" fill="#F3E5AB" opacity="0.6" />
-          </svg>
-        </motion.div>
+      {/* Background Logo — Top center to lower middle center */}
+      <div className="pointer-events-none absolute inset-x-0 top-4 md:top-6 bottom-[26%] md:bottom-[28%] z-0 flex items-center justify-center px-4">
+        <m.img
+          src="/Logo.png"
+          alt="Carpe Diem Logo"
+          initial={{ opacity: 0, scale: 0.92, y: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+          className="h-full max-h-[64vh] w-auto max-w-[85vw] md:max-w-[70vw] lg:max-w-none object-contain select-none filter drop-shadow-[0_12px_32px_rgba(0,0,0,0.85)] drop-shadow-[0_0_35px_rgba(212,175,55,0.25)]"
+        />
+      </div>
 
-        {/* Reserve button */}
-        <motion.button
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-          whileHover={{
-            scale: 1.05,
-            boxShadow: '0 0 24px rgba(243, 229, 171, 0.25)',
-            borderColor: 'rgba(243, 229, 171, 0.4)',
-          }}
-          whileTap={{ scale: 0.98 }}
-          className="pointer-events-auto rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-medium uppercase tracking-[0.2em] text-[#F3E5AB] backdrop-blur-md transition-colors duration-300 hover:text-white md:px-7 md:py-3 md:text-sm"
-        >
-          Reserve
-        </motion.button>
-      </nav>
+
 
       {/* Kinetic typography — bottom center */}
-      <div className="absolute inset-x-0 bottom-[10%] z-10 flex justify-center px-4">
-        <motion.h1
+      <div
+        className="absolute inset-x-0 bottom-4 md:bottom-8 z-10 flex justify-center px-4"
+        style={{ transform: 'translateY(1cm)' }}
+      >
+        <m.h1
           variants={container}
           initial="hidden"
           animate="visible"
@@ -117,53 +82,17 @@ export default function HeroOverlay() {
             <span key={wordIdx} className="inline-flex gap-[0.2cm]">
               {word.split('').map((char, charIdx) => (
                 <span key={charIdx} className="inline-block overflow-hidden">
-                  <motion.span variants={letter} className="inline-block">
+                  <m.span variants={letter} className="inline-block">
                     {char}
-                  </motion.span>
+                  </m.span>
                 </span>
               ))}
             </span>
           ))}
-        </motion.h1>
+        </m.h1>
       </div>
 
-      {/* Bottom-left coordinates */}
-      <motion.div
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 1.4 }}
-        className="absolute bottom-6 left-6 z-10 md:bottom-8 md:left-12"
-      >
-        <div className="flex flex-col gap-1 font-mono text-[10px] uppercase leading-relaxed tracking-[0.25em] text-[#F3E5AB]/70">
-          <span>LAT: 17.3850° N</span>
-          <span>LON: 78.4867° E</span>
-          <span className="text-[#F3E5AB]/40">EST. MMXIX</span>
-        </div>
-      </motion.div>
 
-      {/* Bottom-right status indicator */}
-      <motion.div
-        initial={{ opacity: 0, x: 10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 1.4 }}
-        className="absolute bottom-6 right-6 z-10 flex items-center gap-2.5 md:bottom-8 md:right-12"
-      >
-        <motion.span
-          animate={{
-            opacity: [1, 0.3, 1],
-            scale: [1, 1.3, 1],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="h-[4px] w-[4px] rounded-full bg-green-400 shadow-[0_0_8px_2px_rgba(74,222,128,0.6)]"
-        />
-        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#F3E5AB]/70">
-          Atmosphere: Peak
-        </span>
-      </motion.div>
     </div>
   );
 }

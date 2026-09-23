@@ -2,21 +2,21 @@
 
 import { useEffect } from "react";
 import {
-  motion,
+  m,
   useMotionValue,
   useMotionTemplate,
   useSpring,
   type MotionValue,
 } from "framer-motion";
 
-const SPOTLIGHT_RADIUS_PX = 75;
+const SPOTLIGHT_RADIUS_PX = 180;
 const SPRING_CONFIG = { damping: 25, stiffness: 300, mass: 0.5 } as const;
 
 /**
  * SpotlightDancers
  *
  * Full-bleed, click-through overlay that plays a UV/blacklight-filtered
- * video, revealed only inside a small circular "flashlight" that follows
+ * video, revealed only inside a circular "flashlight" that follows
  * the cursor. The video itself is fully opaque; visibility is controlled
  * entirely via a cursor-tracked CSS mask-image radial gradient.
  */
@@ -27,7 +27,7 @@ export default function SpotlightDancers(): JSX.Element {
   const springX = useSpring(mouseX, SPRING_CONFIG);
   const springY = useSpring(mouseY, SPRING_CONFIG);
 
-  const maskImage = useMotionTemplate`radial-gradient(circle ${SPOTLIGHT_RADIUS_PX}px at ${springX}px ${springY}px, black 0%, transparent 100%)`;
+  const maskImage = useMotionTemplate`radial-gradient(circle ${SPOTLIGHT_RADIUS_PX}px at ${springX}px ${springY}px, black 25%, transparent 100%)`;
 
   useEffect(() => {
     const handlePointerMove = (event: PointerEvent): void => {
@@ -41,7 +41,7 @@ export default function SpotlightDancers(): JSX.Element {
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-10">
-      <motion.div
+      <m.div
         className="absolute inset-0 h-full w-full"
         style={{
           maskImage,
@@ -61,7 +61,7 @@ export default function SpotlightDancers(): JSX.Element {
           muted
           playsInline
         />
-      </motion.div>
+      </m.div>
     </div>
   );
 }

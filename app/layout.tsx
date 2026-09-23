@@ -1,7 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Cormorant_Garamond } from 'next/font/google';
-
+import { AnimationProvider } from '@/components/AnimationProvider';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -21,7 +21,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <AnimationProvider>
+          {children}
+        </AnimationProvider>
+      </body>
     </html>
   );
 }

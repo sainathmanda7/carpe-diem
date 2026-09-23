@@ -5,7 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { SpotLight } from "@react-three/drei";
 import type { SpotLight as ThreeSpotLight } from "three";
 
-const FOG_COLOR = "#050505";
+const FOG_COLOR = "#000000";
 const FOG_DENSITY = 0.08;
 
 const CEILING_Y = 7; // fixture height, above the default camera
@@ -105,7 +105,7 @@ function ClubSpotlight({
 
 export default function PubCanvas(): JSX.Element {
   return (
-    <div className="absolute inset-0 w-full h-full z-0 bg-[#050505]">
+    <div className="absolute inset-0 w-full h-full z-0 bg-transparent">
       <Canvas gl={{ alpha: true, antialias: true }} camera={{ position: [0, 1, 9], fov: 55 }}>
         <fogExp2 attach="fog" args={[FOG_COLOR, FOG_DENSITY]} />
         {LIGHTS.map((light) => (

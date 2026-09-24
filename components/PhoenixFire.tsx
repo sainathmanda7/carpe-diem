@@ -257,7 +257,6 @@ function PhoenixFireMesh({
   return (
     <mesh ref={meshRef} position={position}>
       <planeGeometry args={[width, height, 1, 1]} />
-      {/* @ts-expect-error - custom element registered via extend() */}
       <phoenixFireMaterial
         ref={materialRef}
         uMap={maskTexture}

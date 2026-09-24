@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   m,
   useMotionValue,
@@ -23,6 +23,7 @@ const SPRING_CONFIG = { damping: 25, stiffness: 300, mass: 0.5 } as const;
 export default function SpotlightDancers() {
   const mouseX: MotionValue<number> = useMotionValue(-500);
   const mouseY: MotionValue<number> = useMotionValue(-500);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const springX = useSpring(mouseX, SPRING_CONFIG);
   const springY = useSpring(mouseY, SPRING_CONFIG);
@@ -43,6 +44,58 @@ export default function SpotlightDancers() {
     return () => window.removeEventListener("pointermove", handlePointerMove);
   }, [mouseX, mouseY]);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if ("IntersectionObserver" in window) {
+      const videoObserver = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const currentVideo = entry.target as HTMLVideoElement;
+              const sources = currentVideo.querySelectorAll("source");
+              let hasSource = false;
+              sources.forEach((source) => {
+                if (source.dataset.src) {
+                  source.src = source.dataset.src;
+                  hasSource = true;
+                }
+              });
+
+              if (hasSource) {
+                currentVideo.load();
+                currentVideo.play().catch((error) => {
+                  console.warn("Autoplay blocked by browser:", error);
+                });
+              }
+              observer.unobserve(currentVideo);
+            }
+          });
+        },
+        {
+          rootMargin: "500px 0px",
+          threshold: 0,
+        }
+      );
+
+      videoObserver.observe(video);
+
+      return () => {
+        videoObserver.disconnect();
+      };
+    } else {
+      // Fallback for very old browsers
+      const sources = video.querySelectorAll("source");
+      sources.forEach((source) => {
+        if (source.dataset.src) {
+          source.src = source.dataset.src;
+        }
+      });
+      video.load();
+    }
+  }, []);
+
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-10">
       <m.div
@@ -57,14 +110,17 @@ export default function SpotlightDancers() {
         }}
       >
         <video
-          className="h-full w-full object-cover"
+          ref={videoRef}
+          className="lazy-video h-full w-full object-cover"
           style={{ filter: "hue-rotate(240deg) saturate(300%) contrast(150%)" }}
-          src="/dancers.mp4"
-          autoPlay
+          poster="placeholder.webp"
+          preload="none"
           loop
           muted
           playsInline
-        />
+        >
+          <source data-src="/Dancers.mp4" type="video/mp4" />
+        </video>
       </m.div>
 
       {/* Atmospheric natural foggy smoke band along the +75 boundary (CSS Y ~25%) */}

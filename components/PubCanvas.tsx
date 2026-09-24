@@ -64,7 +64,7 @@ function ClubSpotlight({
   targetRadius,
   targetSpeed,
   phase,
-}: ClubLightConfig): JSX.Element {
+}: ClubLightConfig) {
   const lightRef = useRef<ThreeSpotLight>(null!);
 
   useFrame((state) => {
@@ -103,7 +103,7 @@ function ClubSpotlight({
   );
 }
 
-export default function PubCanvas(): JSX.Element {
+export default function PubCanvas() {
   return (
     <div className="absolute inset-0 w-full h-full z-0 bg-transparent">
       <Canvas gl={{ alpha: true, antialias: true }} camera={{ position: [0, 1, 9], fov: 55 }}>

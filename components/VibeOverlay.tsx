@@ -46,8 +46,11 @@ export default function VibeOverlay() {
               pattern="diagonal"
               randomness={0.2}
               fade
-              trigger="hover"
               aspectRatio="auto"
+              style={{}}
+              active={undefined}
+              onActiveChange={undefined}
+              onComplete={undefined}
             />
           </m.div>
 

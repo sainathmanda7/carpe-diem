@@ -25,23 +25,59 @@ export default function WhiskyExperience() {
         const framesImages: HTMLImageElement[] = [];
         const currentFrameObj = { frame: 0 };
 
-        // 1. Preload Images
-        for (let i = 1; i <= frameCount; i++) {
-            const img = new Image();
-            const paddedNumber = i.toString().padStart(5, '0');
-            img.src = `/frames/frame_${paddedNumber}.png`;
-            framesImages.push(img);
+        const getImagePath = (index: number) => {
+            const paddedNumber = index.toString().padStart(5, '0');
+            return `/frames/frame_${paddedNumber}.webp`;
+        };
+
+        // 1. Preload First Frame Instantly
+        const firstFrame = new Image();
+        firstFrame.src = getImagePath(1);
+        framesImages[0] = firstFrame;
+
+        // 2. Background Preloader (Fires after initial load to free up the network)
+        const loadRemainingFrames = () => {
+            for (let i = 2; i <= frameCount; i++) {
+                const img = new Image();
+                img.src = getImagePath(i);
+                framesImages[i - 1] = img;
+            }
+        };
+
+        if (document.readyState === 'complete') {
+            loadRemainingFrames();
+        } else {
+            window.addEventListener('load', loadRemainingFrames);
         }
 
         const renderCanvas = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, imgArray: HTMLImageElement[], frameObj: { frame: number }) => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
             const img = imgArray[Math.round(frameObj.frame)];
-            if (img && img.complete) {
-                const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-                const x = (canvas.width / 2) - (img.width / 2) * scale;
-                const y = (canvas.height / 2) - (img.height / 2) * scale;
-                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+            if (!img || !img.complete) return;
+
+            // 1. Calculate ratios
+            const imgRatio = img.width / img.height;
+            const canvasRatio = canvas.width / canvas.height;
+            
+            let renderWidth: number, renderHeight: number, xOffset: number, yOffset: number;
+
+            // 2. Determine scaling to fill the screen while maintaining aspect ratio (object-fit: cover)
+            if (canvasRatio > imgRatio) {
+                // Screen is wider than the image (Desktop)
+                renderWidth = canvas.width;
+                renderHeight = canvas.width / imgRatio;
+                xOffset = 0;
+                yOffset = (canvas.height - renderHeight) / 2; // Center vertically
+            } else {
+                // Screen is taller than the image (Mobile)
+                renderWidth = canvas.height * imgRatio;
+                renderHeight = canvas.height;
+                xOffset = (canvas.width - renderWidth) / 2; // Center horizontally
+                yOffset = 0;
             }
+
+            // 3. Clear the previous frame and draw the newly calculated frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, xOffset, yOffset, renderWidth, renderHeight);
         };
 
         framesImages.forEach((img, idx) => {

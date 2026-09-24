@@ -14,7 +14,7 @@ export default function WhiskyExperience() {
     const textRef = useRef<HTMLDivElement>(null);
 
     // The exact frame count from the new frames folder
-    const frameCount = 600;
+    const frameCount = 200;
 
     useGSAP(() => {
         const canvas = canvasRef.current;
@@ -22,71 +22,101 @@ export default function WhiskyExperience() {
 
         if (!canvas || !ctx2d) return;
 
-        const framesImages: HTMLImageElement[] = [];
+        const framesImages: (HTMLImageElement | ImageBitmap)[] = [];
         const currentFrameObj = { frame: 0 };
+        let isCancelled = false;
 
         const getImagePath = (index: number) => {
-            const paddedNumber = index.toString().padStart(5, '0');
-            return `/frames/frame_${paddedNumber}.webp`;
+            const paddedNumber = index.toString().padStart(3, '0');
+            return `/frames/ezgif-frame-${paddedNumber}.webp`;
         };
 
-        // 1. Preload First Frame Instantly
-        const firstFrame = new Image();
-        firstFrame.src = getImagePath(1);
-        framesImages[0] = firstFrame;
+        const renderCanvas = (
+            canvas: HTMLCanvasElement,
+            ctx: CanvasRenderingContext2D,
+            imgArray: (HTMLImageElement | ImageBitmap)[],
+            frameObj: { frame: number }
+        ) => {
+            const targetIndex = Math.min(frameCount - 1, Math.max(0, Math.round(frameObj.frame)));
+            let img: HTMLImageElement | ImageBitmap | undefined = imgArray[targetIndex];
 
-        // 2. Background Preloader (Fires after initial load to free up the network)
-        const loadRemainingFrames = () => {
-            for (let i = 2; i <= frameCount; i++) {
-                const img = new Image();
-                img.src = getImagePath(i);
-                framesImages[i - 1] = img;
+            // If the requested frame is not yet loaded, fall back to the nearest loaded frame
+            if (!img || ('complete' in img && !img.complete)) {
+                for (let offset = 1; offset < frameCount; offset++) {
+                    const prev = imgArray[targetIndex - offset];
+                    if (prev && (!('complete' in prev) || prev.complete)) {
+                        img = prev;
+                        break;
+                    }
+                    const next = imgArray[targetIndex + offset];
+                    if (next && (!('complete' in next) || next.complete)) {
+                        img = next;
+                        break;
+                    }
+                }
             }
-        };
 
-        if (document.readyState === 'complete') {
-            loadRemainingFrames();
-        } else {
-            window.addEventListener('load', loadRemainingFrames);
-        }
-
-        const renderCanvas = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, imgArray: HTMLImageElement[], frameObj: { frame: number }) => {
-            const img = imgArray[Math.round(frameObj.frame)];
-            if (!img || !img.complete) return;
+            if (!img) return;
+            if ('complete' in img && !img.complete) return;
 
             // 1. Calculate ratios
             const imgRatio = img.width / img.height;
-            const canvasRatio = canvas.width / canvas.height;
             
-            let renderWidth: number, renderHeight: number, xOffset: number, yOffset: number;
-
-            // 2. Determine scaling to fill the screen while maintaining aspect ratio (object-fit: cover)
-            if (canvasRatio > imgRatio) {
-                // Screen is wider than the image (Desktop)
-                renderWidth = canvas.width;
-                renderHeight = canvas.width / imgRatio;
-                xOffset = 0;
-                yOffset = (canvas.height - renderHeight) / 2; // Center vertically
-            } else {
-                // Screen is taller than the image (Mobile)
-                renderWidth = canvas.height * imgRatio;
-                renderHeight = canvas.height;
-                xOffset = (canvas.width - renderWidth) / 2; // Center horizontally
-                yOffset = 0;
-            }
+            // 2. Determine scaling to fill the screen while maintaining aspect ratio
+            // By always fitting to width, we get object-fit: contain on mobile (no zoom) 
+            // and object-fit: cover on desktop (no side black bars).
+            const renderWidth = canvas.width;
+            const renderHeight = canvas.width / imgRatio;
+            const xOffset = 0;
+            const yOffset = (canvas.height - renderHeight) / 2; // Center vertically
 
             // 3. Clear the previous frame and draw the newly calculated frame
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, xOffset, yOffset, renderWidth, renderHeight);
         };
 
-        framesImages.forEach((img, idx) => {
-            img.onload = () => {
-                if (Math.round(currentFrameObj.frame) === idx) {
+        const INITIAL_BATCH = 50;
+
+        const loadFrame = async (index: number) => {
+            try {
+                const response = await fetch(getImagePath(index));
+                const blob = await response.blob();
+                const bitmap = await createImageBitmap(blob);
+                if (isCancelled) return;
+                framesImages[index - 1] = bitmap;
+                if (Math.round(currentFrameObj.frame) === index - 1) {
                     renderCanvas(canvas, ctx2d, framesImages, currentFrameObj);
                 }
-            };
-        });
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        const loadInitialBatch = async () => {
+            const promises = [];
+            for (let i = 1; i <= INITIAL_BATCH; i++) {
+                if (isCancelled) break;
+                promises.push(loadFrame(i));
+            }
+            await Promise.all(promises);
+            
+            if (!isCancelled) {
+                loadRemainingFramesSequentially();
+            }
+        };
+
+        const loadRemainingFramesSequentially = async () => {
+            for (let i = INITIAL_BATCH + 1; i <= frameCount; i++) {
+                if (isCancelled) break;
+                await loadFrame(i);
+            }
+        };
+
+        if (document.readyState === 'complete') {
+            loadInitialBatch();
+        } else {
+            window.addEventListener('load', loadInitialBatch);
+        }
 
         // 2. GSAP Timeline
         const tl = gsap.timeline({
@@ -96,6 +126,7 @@ export default function WhiskyExperience() {
                 end: "+=400%",
                 scrub: 1,
                 pin: true,
+                anticipatePin: 1,
             }
         });
 
@@ -120,6 +151,8 @@ export default function WhiskyExperience() {
 
         // 3. Bulletproof React Cleanup
         return () => {
+            isCancelled = true;
+            window.removeEventListener('load', loadInitialBatch);
             window.removeEventListener('resize', handleResize);
         };
     }, { scope: containerRef });

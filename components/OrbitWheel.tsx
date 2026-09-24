@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown } from "lucide-react";
+
 import { useEffect, useRef, useState } from "react";
 
 const clamp = (value: number, min = 0, max = 1) =>
@@ -53,7 +53,7 @@ export default function OrbitWheel() {
             <span className="text-[0.56rem] uppercase tracking-[0.3em] text-neutral-400">
               {progress < 0.76 ? "Explore" : "Discover"}
             </span>
-            <ArrowDown className="animate-drift text-neutral-400" size={14} strokeWidth={1.3} />
+            <svg xmlns="http://www.w3.org/2000/svg" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round" className="animate-drift text-neutral-400"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
           </div>
 
           <div className="absolute inset-0 flex items-center justify-center">

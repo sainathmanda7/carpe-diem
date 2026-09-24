@@ -35,19 +35,7 @@ const letter = {
 export default function HeroOverlay() {
   return (
     <div className="pointer-events-none absolute inset-0 z-50 h-full w-full bg-transparent overflow-hidden">
-      {/* Film grain / noise overlay */}
-      <svg className="absolute inset-0 h-full w-full opacity-[0.035] mix-blend-overlay">
-        <filter id="grain-noise">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.9"
-            numOctaves="3"
-            stitchTiles="stitch"
-          />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#grain-noise)" />
-      </svg>
+      <div className="absolute inset-0 h-full w-full pointer-events-none noise-overlay"></div>
 
 
       {/* Background Logo — Top center to lower middle center */}
@@ -66,14 +54,13 @@ export default function HeroOverlay() {
 
       {/* Kinetic typography — bottom center */}
       <div
-        className="absolute inset-x-0 bottom-4 md:bottom-8 z-10 flex justify-center px-4"
-        style={{ transform: 'translateY(1cm)' }}
+        className="absolute inset-x-0 bottom-24 md:bottom-12 z-10 flex justify-center px-4"
       >
         <m.h1
           variants={container}
           initial="hidden"
           animate="visible"
-          className={`${longaIberica.variable} metallic-text flex flex-wrap items-baseline justify-center gap-x-[15px] overflow-visible text-[22vw] font-bold leading-none md:text-[18vw] lg:text-[15vw]`}
+          className={`${longaIberica.variable} metallic-text flex flex-wrap items-baseline justify-center gap-x-[15px] overflow-visible text-[20vw] md:text-[18vw] lg:text-[15vw] font-bold leading-none`}
           style={{ fontFamily: 'var(--font-longa-iberica), serif', cursor: 'default' }}
         >
           {TITLE.split(' ').map((word, wordIdx) => (

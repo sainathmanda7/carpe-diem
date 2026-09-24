@@ -2,8 +2,8 @@
 
 import * as THREE from 'three';
 import React, { useMemo, useRef, useEffect, useState, Suspense } from 'react';
-import { Canvas, useFrame, extend, type ThreeElements } from '@react-three/fiber';
-import { shaderMaterial, useTexture } from '@react-three/drei';
+import { useFrame, useThree, extend, type ThreeElements } from '@react-three/fiber';
+import { shaderMaterial, useTexture, View } from '@react-three/drei';
 
 // -----------------------------------------------------------------------------
 // Shaders
@@ -85,45 +85,61 @@ const fragmentShader = /* glsl */ `
 
     // Sample the phoenix silhouette mask.
     vec4 maskSample = texture2D(uMap, uv);
-    float brightness = dot(maskSample.rgb, vec3(0.299, 0.587, 0.114));
 
-    // Discard any boundary edge clamping artifacts
-    if (uv.x <= 0.002 || uv.x >= 0.998 || uv.y <= 0.002 || uv.y >= 0.998) {
+    // Discard transparent background cleanly
+    if (maskSample.a < 0.02) {
       discard;
     }
 
-    // Outside the shape -> discard early (handles transparent or white background SVG).
-    if (maskSample.a < 0.05 || (maskSample.a > 0.5 && brightness > 0.92)) {
-      discard;
-    }
+    // Feather and anatomical detail from the SVG artwork
+    float featherLum = dot(maskSample.rgb, vec3(0.299, 0.587, 0.114));
 
-    float mask = maskSample.a * (1.0 - smoothstep(0.82, 0.92, brightness));
+    // Flames drift upward and react dynamically to mouse interaction
+    float lean = uMouse.x * uLean * (0.2 + 0.8 * uv.y);
+    vec2 fireCoord = uv * vec2(2.8, 3.8);
+    fireCoord.y -= uTime * uSpeed;
+    fireCoord.x += lean;
 
-    // Flames are anchored at the base (uv.y = 0) and drift away from the
-    // cursor more strongly toward the tip (uv.y = 1).
-    float leanAmount = uMouse.x * uLean * uv.y;
-
-    vec2 q = uv * vec2(3.2, 4.5);
-    q.y -= uTime * uSpeed;
-    q.x += leanAmount;
-
-    // Domain-warp the field through itself for organic, licking flame shapes.
+    // Multi-octave domain warping creates natural, licking fire tongues
     vec2 warp = vec2(
-      fbm(q + vec2(0.0, uTime * uSpeed * 0.6)),
-      fbm(q + vec2(5.2, 1.3) - uTime * uSpeed * 0.4)
+      fbm(fireCoord + vec2(0.0, uTime * uSpeed * 0.6)),
+      fbm(fireCoord + vec2(5.2, 1.3) - uTime * uSpeed * 0.4)
     );
+    float fireNoise = fbm(fireCoord + warp * 1.15);
 
-    float n = fbm(q + warp * 1.15);
+    // 1. Base silhouette heat ensures the phoenix form is always clearly legible
+    float baseHeat = 0.50 + 0.35 * featherLum;
 
-    // Bias so the base burns hotter/denser than the tip, like real fire.
-    float heightBias = mix(1.0, 0.45, smoothstep(0.0, 1.0, uv.y));
-    float intensity = clamp(n * heightBias + 0.15, 0.0, 1.0);
+    // 2. Animated flame licks and licking tongues
+    float flameMotion = (fireNoise - 0.45) * 0.55;
 
-    // Crimson edge -> amber mid-tone -> white-hot core.
-    vec3 color = mix(uColorEdge, uColorMid, smoothstep(0.15, 0.55, intensity));
-    color = mix(color, uColorCore, smoothstep(0.55, 0.9, intensity));
+    // 3. Central chest furnace glow (where the heart/core of the phoenix burns hottest)
+    vec2 chestPos = vec2(0.5, 0.45);
+    float chestDist = length(uv - chestPos);
+    float heartCore = exp(-chestDist * 3.2) * 0.4;
 
-    float alpha = smoothstep(0.12, 0.5, intensity) * mask;
+    // Overall radiant heat
+    float heat = clamp(baseHeat + flameMotion + heartCore, 0.0, 1.35);
+
+    // Fiery color palette:
+    // Deep ember red -> fiery crimson -> blazing amber-orange -> radiant gold -> white-hot core
+    vec3 cEmber = vec3(0.55, 0.04, 0.02);
+    vec3 cEdge  = uColorEdge;               // Crimson
+    vec3 cMid   = uColorMid;                // Amber orange
+    vec3 cGold  = vec3(1.0, 0.82, 0.22);     // Radiant gold
+    vec3 cCore  = uColorCore;               // Incandescent white core
+
+    vec3 color = mix(cEmber, cEdge, smoothstep(0.05, 0.32, heat));
+    color = mix(color, cMid, smoothstep(0.32, 0.62, heat));
+    color = mix(color, cGold, smoothstep(0.62, 0.88, heat));
+    color = mix(color, cCore, smoothstep(0.88, 1.15, heat));
+
+    // Delicate golden edge flame licking effect
+    float edgeTongue = pow(clamp(1.0 - abs(fireNoise - 0.5) * 2.0, 0.0, 1.0), 3.0) * 0.35;
+    color += cGold * edgeTongue;
+
+    // Alpha cleanly follows the phoenix silhouette with anti-aliasing
+    float alpha = maskSample.a * smoothstep(0.08, 0.32, heat);
 
     gl_FragColor = vec4(color, alpha);
   }
@@ -181,8 +197,6 @@ type PhoenixFireMaterialType = THREE.ShaderMaterial & {
 export interface PhoenixFireProps {
   /** Path to the silhouette SVG used to mask the flame (served from /public). */
   maskUrl?: string;
-  /** Height of the plane in world units; width is derived from the SVG's aspect ratio. */
-  height?: number;
   /** Upward flow speed of the noise field. */
   speed?: number;
   /** How strongly the flame leans away from the cursor. */
@@ -194,7 +208,6 @@ export interface PhoenixFireProps {
 
 function PhoenixFireMesh({
   maskUrl = '/phoenix-mask.svg',
-  height = 4,
   speed = 0.6,
   leanStrength = 0.75,
   mouseDamping = 4,
@@ -206,6 +219,7 @@ function PhoenixFireMesh({
   const windowPointer = useRef(new THREE.Vector2(0, 0));
 
   const maskTexture = useTexture(maskUrl);
+  const { viewport } = useThree();
 
   // Configure the mask texture once it's loaded.
   useEffect(() => {
@@ -230,14 +244,51 @@ function PhoenixFireMesh({
     return () => window.removeEventListener('pointermove', handlePointerMove);
   }, []);
 
-  // Derive plane width from the SVG's natural aspect ratio so the fire isn't stretched.
-  const aspect = useMemo(() => {
-    const img = maskTexture?.image as { width?: number; height?: number } | undefined;
-    if (!img?.width || !img?.height) return 1;
-    return img.width / img.height;
-  }, [maskTexture]);
+  const isViewportValid =
+    Number.isFinite(viewport.width) &&
+    Number.isFinite(viewport.height) &&
+    viewport.width > 0 &&
+    viewport.height > 0;
 
-  const width = height * aspect;
+  // Compute exact object-contain world dimensions to match the DOM container
+  const { planeWidth, planeHeight } = useMemo(() => {
+    const fallbackWidth = 4;
+    const fallbackHeight = 4 / (2048 / 2074);
+
+    if (!isViewportValid) {
+      return { planeWidth: fallbackWidth, planeHeight: fallbackHeight };
+    }
+
+    const imageAspect = 2048 / 2074;
+    const containerAspect = viewport.width / viewport.height;
+
+    if (!Number.isFinite(containerAspect) || containerAspect <= 0) {
+      return { planeWidth: fallbackWidth, planeHeight: fallbackHeight };
+    }
+
+    if (containerAspect >= imageAspect) {
+      const h = viewport.height;
+      const w = h * imageAspect;
+      return {
+        planeHeight: Number.isFinite(h) && h > 0 ? h : fallbackHeight,
+        planeWidth: Number.isFinite(w) && w > 0 ? w : fallbackWidth,
+      };
+    } else {
+      const w = viewport.width;
+      const h = w / imageAspect;
+      return {
+        planeWidth: Number.isFinite(w) && w > 0 ? w : fallbackWidth,
+        planeHeight: Number.isFinite(h) && h > 0 ? h : fallbackHeight,
+      };
+    }
+  }, [viewport.width, viewport.height, isViewportValid]);
+
+  const safePosition: [number, number, number] = useMemo(() => {
+    if (Array.isArray(position) && position.length === 3 && position.every(Number.isFinite)) {
+      return position as [number, number, number];
+    }
+    return [0, 0, 0];
+  }, [position]);
 
   useFrame((state, delta) => {
     const material = materialRef.current;
@@ -254,9 +305,13 @@ function PhoenixFireMesh({
     material.uMouse.copy(smoothedMouse.current);
   });
 
+  if (!isViewportValid) {
+    return null;
+  }
+
   return (
-    <mesh ref={meshRef} position={position}>
-      <planeGeometry args={[width, height, 1, 1]} />
+    <mesh ref={meshRef} position={safePosition}>
+      <planeGeometry args={[planeWidth, planeHeight, 1, 1]} />
       <phoenixFireMaterial
         ref={materialRef}
         uMap={maskTexture}
@@ -286,17 +341,11 @@ export default function PhoenixFire(props: PhoenixFireProps) {
   }
 
   return (
-    <Canvas
-      className="w-full h-full"
-      camera={{ position: [0, 0, 5], fov: 45 }}
-      gl={{ antialias: true, alpha: true }}
-      dpr={[1, 2]}
-      style={{ width: '100%', height: '100%' }}
-    >
+    <View className="w-full h-full">
       <Suspense fallback={null}>
         <PhoenixFireMesh {...props} />
       </Suspense>
-    </Canvas>
+    </View>
   );
 }
 

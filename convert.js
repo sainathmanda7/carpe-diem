@@ -13,7 +13,7 @@ if (!fs.existsSync(outputDir)) {
 fs.readdirSync(inputDir).forEach(file => {
   if (file.match(/\.(png|jpg|jpeg)$/i)) {
     const inputFile = path.join(inputDir, file);
-    // Changes frame_00001.png to frame_00001.webp
+    // Changes ezgif-frame-001.jpg/png to ezgif-frame-001.webp
     const outputFile = path.join(outputDir, file.replace(/\.[^/.]+$/, ".webp")); 
 
     sharp(inputFile)

@@ -29,8 +29,14 @@
   overflow: hidden;
   opacity: 0;
   contain: paint;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .pixel-swap__pixel-content {
   position: absolute;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }

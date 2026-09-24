@@ -1,0 +1,43 @@
+.bounceCardsContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 540px;
+  height: 400px;
+}
+
+/* The invisible physics container for the card */
+.card {
+  position: absolute;
+  width: 280px;
+  aspect-ratio: 1;
+  overflow: visible; 
+  z-index: 1;
+  cursor: pointer;
+}
+
+.card:hover {
+  z-index: 30;
+}
+
+/* The actual image framing */
+.card .image-wrapper {
+  width: 100%;
+  height: 100%;
+  border: 4px solid #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover .image-wrapper {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(243, 229, 171, 0.2);
+}
+
+.card .image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

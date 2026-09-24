@@ -6,6 +6,7 @@ import WhiskyExperience from '@/components/WhiskyExperience';
 import OrbitWheel from '@/components/OrbitWheel';
 import VibeTree from '@/components/VibeTree';
 import VibeOverlay from "@/components/VibeOverlay";
+import GallerySection from '@/components/GallerySection'
 
 export default function Home() {
   return (
@@ -50,6 +51,8 @@ export default function Home() {
         <VibeTree />
         <VibeOverlay />
       </section>
+      
+      <GallerySection />
     </main>
   );
 }
